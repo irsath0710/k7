@@ -403,7 +403,7 @@ const App = () => {
                   <img src="/bg.png" className="hero-bg-image" alt="background" />
                   <h1 className="pink-text" style={{ fontSize: '3rem', marginBottom: '2rem' }}>CODE EXECUTOR ACTIVE</h1>
                   <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>Proceed to the HackerRank platform to execute code.</p>
-                  <button className="btn-squid" onClick={() => window.open('https://www.hackerrank.com', '_blank')}>OPEN PLATFORM AGAIN</button>
+                  <button className="btn-squid" onClick={() => window.open('https://www.hackerrank.com/red-code-green-code', '_blank')}>OPEN PLATFORM AGAIN</button>
                   <button className="btn-squid-secondary" onClick={() => setCurrentView('role_select_r2')} style={{ marginTop: '2rem' }}>CHANGE ROLE</button>
                 </div>
               ) : (

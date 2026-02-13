@@ -17,8 +17,12 @@ const DefuserPage = ({
     leaderboard
 }) => {
     const [timeLeft, setTimeLeft] = useState(600); // 10 minutes default
+    const [showExplosion, setShowExplosion] = useState(false);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [showHeartBreak, setShowHeartBreak] = useState(false);
     const [prevLives, setPrevLives] = useState(teamData?.round1?.lives || 3);
+
+    // Derived state for game status
     const gameStatus = teamData?.round1?.status;
 
     useEffect(() => {
@@ -41,12 +45,28 @@ const DefuserPage = ({
 
     useEffect(() => {
         const currentLives = teamData?.round1?.lives;
-        if (currentLives < prevLives) {
+        if (currentLives !== undefined && prevLives !== undefined && currentLives < prevLives) {
             setShowHeartBreak(true);
             setTimeout(() => setShowHeartBreak(false), 2000);
         }
-        setPrevLives(currentLives);
+        if (currentLives !== undefined) {
+            setPrevLives(currentLives);
+        }
     }, [teamData?.round1?.lives, prevLives]);
+
+    // Handle Game Over / Explosion
+    useEffect(() => {
+        if ((gameStatus === 'exploded' || timeLeft === 0) && !showLeaderboard) {
+            setShowExplosion(true);
+            const timer = setTimeout(() => {
+                setShowExplosion(false);
+                setShowLeaderboard(true);
+            }, 5000); // Show explosion for 5 seconds
+            return () => clearTimeout(timer);
+        } else if (gameStatus === 'completed') {
+            setShowLeaderboard(true);
+        }
+    }, [gameStatus, timeLeft]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -54,7 +74,7 @@ const DefuserPage = ({
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    if (gameStatus === 'exploded' || timeLeft === 0 || gameStatus === 'completed') {
+    if (showLeaderboard) {
         return <LeaderboardBoard leaderboard={leaderboard} currentTeamName={teamData?.teamName} setCurrentView={setCurrentView} />;
     }
 
@@ -78,6 +98,61 @@ const DefuserPage = ({
 
     return (
         <div className={`arena-floor ${activeIndex !== -1 ? 'module-zoom-active' : ''}`}>
+            {/* EXPLOSION OVERLAY */}
+            <AnimatePresence>
+                {showExplosion && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                            background: 'rgba(0,0,0,0.9)', zIndex: 9999,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        <motion.h1
+                            animate={{ scale: [1, 1.2, 1], color: ['#fff', '#ff0000', '#fff'] }}
+                            transition={{ duration: 0.5, repeat: Infinity }}
+                            style={{ fontSize: '5rem', fontWeight: 900, color: '#ff3c3c', textShadow: '0 0 50px red' }}
+                        >
+                            BOMB BLASTED
+                        </motion.h1>
+                        <motion.div
+                            animate={{ opacity: [0, 1, 0] }}
+                            transition={{ duration: 0.2, repeat: Infinity }}
+                            style={{ width: '100vw', height: '100vh', position: 'absolute', top: 0, left: 0, background: 'rgba(255, 60, 60, 0.2)', pointerEvents: 'none' }}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* BROKEN HEART OVERLAY */}
+            <AnimatePresence>
+                {showHeartBreak && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1.2 }}
+                        exit={{ opacity: 0, scale: 2 }}
+                        style={{
+                            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 1000, pointerEvents: 'none', background: 'rgba(255,0,0,0.1)'
+                        }}
+                    >
+                        <motion.div
+                            animate={{
+                                x: [0, -10, 10, -10, 10, 0],
+                                rotate: [0, -5, 5, -5, 5, 0]
+                            }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <HeartOff size={200} color="#ff3c3c" strokeWidth={3} />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence mode="wait">
                 {!isBoxOpen ? (
                     <motion.div key="box" className="bomb-box-outer" exit={{ scale: 1.1, opacity: 0, rotateX: -60, y: -100 }} transition={{ duration: 0.8 }}>
@@ -194,30 +269,6 @@ const DefuserPage = ({
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-            <AnimatePresence>
-                {showHeartBreak && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={{ opacity: 1, scale: 1.2 }}
-                        exit={{ opacity: 0, scale: 2 }}
-                        style={{
-                            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            zIndex: 1000, pointerEvents: 'none', background: 'rgba(255,0,0,0.1)'
-                        }}
-                    >
-                        <motion.div
-                            animate={{
-                                x: [0, -10, 10, -10, 10, 0],
-                                rotate: [0, -5, 5, -5, 5, 0]
-                            }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <HeartOff size={200} color="#ff3c3c" strokeWidth={3} />
-                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>

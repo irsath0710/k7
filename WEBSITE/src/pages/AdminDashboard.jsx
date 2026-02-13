@@ -51,9 +51,11 @@ const AdminDashboard = ({ socket, isRedCode, handleLogout, gameState }) => {
         if (state.isPaused) {
             return (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-                    <button className="admin-action-btn view" onClick={() => setView(round === 1 ? 'details_r1' : 'details_r2')}>
-                        VIEW_DETAILS
-                    </button>
+                    {round === 1 && (
+                        <button className="admin-action-btn view" onClick={() => setView('details_r1')}>
+                            VIEW_DETAILS
+                        </button>
+                    )}
                     <button className="admin-action-btn restart" onClick={() => { if (window.confirm('Restart all games?')) handleAdminAction(round, 'restart') }}>
                         RESTART
                     </button>
@@ -72,9 +74,11 @@ const AdminDashboard = ({ socket, isRedCode, handleLogout, gameState }) => {
                 <button className="admin-action-btn stop" onClick={() => { if (window.confirm('Force stop this round for ALL TEAMS?')) handleAdminAction(round, 'stop') }}>
                     STOP_GAME
                 </button>
-                <button className="admin-action-btn view" onClick={() => setView(round === 1 ? 'details_r1' : 'details_r2')}>
-                    VIEW_DETAILS
-                </button>
+                {round === 1 && (
+                    <button className="admin-action-btn view" onClick={() => setView('details_r1')}>
+                        VIEW_DETAILS
+                    </button>
+                )}
             </div>
         );
     };

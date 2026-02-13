@@ -14,6 +14,8 @@ const InstructorPage = ({
 }) => {
     const [timeLeft, setTimeLeft] = useState(600);
     const [showHeartBreak, setShowHeartBreak] = useState(false);
+    const [showExplosion, setShowExplosion] = useState(false);
+    const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [prevLives, setPrevLives] = useState(teamData?.round1?.lives || 3);
     const gameStatus = teamData?.round1?.status;
 
@@ -37,12 +39,28 @@ const InstructorPage = ({
 
     useEffect(() => {
         const currentLives = teamData?.round1?.lives;
-        if (currentLives < prevLives) {
+        if (currentLives !== undefined && prevLives !== undefined && currentLives < prevLives) {
             setShowHeartBreak(true);
             setTimeout(() => setShowHeartBreak(false), 2000);
         }
-        setPrevLives(currentLives);
+        if (currentLives !== undefined) {
+            setPrevLives(currentLives);
+        }
     }, [teamData?.round1?.lives, prevLives]);
+
+    // Handle Game Over / Explosion
+    useEffect(() => {
+        if ((gameStatus === 'exploded' || timeLeft === 0) && !showLeaderboard) {
+            setShowExplosion(true);
+            const timer = setTimeout(() => {
+                setShowExplosion(false);
+                setShowLeaderboard(true);
+            }, 5000); // Show explosion for 5 seconds
+            return () => clearTimeout(timer);
+        } else if (gameStatus === 'completed') {
+            setShowLeaderboard(true);
+        }
+    }, [gameStatus, timeLeft]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -50,12 +68,40 @@ const InstructorPage = ({
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    if (gameStatus === 'exploded' || timeLeft === 0 || gameStatus === 'completed') {
+    if (showLeaderboard) {
         return <LeaderboardBoard leaderboard={leaderboard} currentTeamName={teamData?.teamName} setCurrentView={setCurrentView} />;
     }
 
     return (
         <div className="arena-floor">
+            {/* EXPLOSION OVERLAY */}
+            <AnimatePresence>
+                {showExplosion && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                            background: 'rgba(0,0,0,0.9)', zIndex: 9999,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        <motion.h1
+                            animate={{ scale: [1, 1.2, 1], color: ['#fff', '#ff0000', '#fff'] }}
+                            transition={{ duration: 0.5, repeat: Infinity }}
+                            style={{ fontSize: '5rem', fontWeight: 900, color: '#ff3c3c', textShadow: '0 0 50px red' }}
+                        >
+                            BOMB BLASTED
+                        </motion.h1>
+                        <motion.div
+                            animate={{ opacity: [0, 1, 0] }}
+                            transition={{ duration: 0.2, repeat: Infinity }}
+                            style={{ width: '100vw', height: '100vh', position: 'absolute', top: 0, left: 0, background: 'rgba(255, 60, 60, 0.2)', pointerEvents: 'none' }}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <div className="instructor-header" style={{ width: '100%', left: 0, display: 'flex', justifyContent: 'center' }}>
                 <div className="timer-led-big">{formatTime(timeLeft)}</div>
             </div>

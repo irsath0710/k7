@@ -48,13 +48,15 @@ const RoleSelectRound2 = ({
 
             <div className="role-cards" style={{ display: 'flex', gap: '2rem', zIndex: 10 }}>
                 <div className="role-card"
-                    onClick={() => selectRole('analyst')}
+                    onClick={() => !currentRole && selectRole('analyst')}
                     style={{
                         background: currentRole === 'analyst' ? 'rgba(255, 60, 60, 0.1)' : '#111',
                         border: currentRole === 'analyst' ? '2px solid var(--squid-pink)' : '2px solid #333',
-                        padding: '3rem', width: '320px', textAlign: 'center', cursor: 'pointer',
+                        padding: '3rem', width: '320px', textAlign: 'center',
+                        cursor: currentRole ? 'default' : 'pointer',
                         transition: 'all 0.3s', borderRadius: '20px',
-                        transform: currentRole === 'analyst' ? 'scale(1.05)' : 'scale(1)'
+                        transform: currentRole === 'analyst' ? 'scale(1.05)' : 'scale(1)',
+                        opacity: (currentRole && currentRole !== 'analyst') ? 0.5 : 1
                     }}>
                     <Eye size={64} color="var(--squid-pink)" />
                     <h3 style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>CODE ANALYST</h3>
@@ -64,15 +66,19 @@ const RoleSelectRound2 = ({
 
                 <div className="role-card"
                     onClick={() => {
-                        selectRole('executor');
-                        window.open('https://www.hackerrank.com', '_blank');
+                        if (!currentRole) {
+                            selectRole('executor');
+                            window.open('https://www.hackerrank.com/red-code-green-code', '_blank');
+                        }
                     }}
                     style={{
                         background: currentRole === 'executor' ? 'rgba(255, 60, 60, 0.1)' : '#111',
                         border: currentRole === 'executor' ? '2px solid var(--squid-pink)' : '2px solid #333',
-                        padding: '3rem', width: '320px', textAlign: 'center', cursor: 'pointer',
+                        padding: '3rem', width: '320px', textAlign: 'center',
+                        cursor: currentRole ? 'default' : 'pointer',
                         transition: 'all 0.3s', borderRadius: '20px',
-                        transform: currentRole === 'executor' ? 'scale(1.05)' : 'scale(1)'
+                        transform: currentRole === 'executor' ? 'scale(1.05)' : 'scale(1)',
+                        opacity: (currentRole && currentRole !== 'executor') ? 0.5 : 1
                     }}>
                     <Keyboard size={64} color="var(--squid-pink)" />
                     <h3 style={{ marginTop: '1.5rem', marginBottom: '0.5rem' }}>CODE EXECUTOR</h3>
